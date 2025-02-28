@@ -62,3 +62,5 @@ for coin in cfgj["coins"]:
 
     except Exception:
         pass
+
+#and if you want support me USDT TRC20: TCq4uo3bm1tgUshNM49e9RmnCyRUKzc6hg USDT TON: UQASju0kX9ZnbivNqsKudTefY3lV3kaFWqUJ0MHHbx8MN0JG
