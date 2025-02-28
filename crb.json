@@ -1,0 +1,7 @@
+{
+    "coins": ["catizen", "bitcoin"], 
+    "exchanges-filter": "false",
+    "exchanges": ["Bybit", "Binance"], 
+    "investment": "1000",
+    "currency": "USDT"
+  }

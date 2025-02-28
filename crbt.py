@@ -1,0 +1,64 @@
+import requests
+import json
+
+with open("crb.json", "r", encoding="utf-8") as config_file:
+    cfg = config_file.read()
+cfgj = json.loads(cfg)
+currency = cfgj["currency"]
+ex_filter = cfgj["exchanges-filter"]
+investment = float(cfgj["investment"])
+
+def get_coin_data(coin):
+    url = f"https://api.coinmarketcap.com/data-api/v3/cryptocurrency/market-pairs/latest?slug={coin}&start=1&limit=100&category=spot&sort=cmc_rank_advanced"
+    response = requests.get(url)
+    response.raise_for_status()
+    return response.json()
+
+for coin in cfgj["coins"]:
+    try:
+        exchanges = []
+        prices = []
+        urls = []
+
+        data = get_coin_data(coin)
+        if not data or "data" not in data or "marketPairs" not in data["data"]:
+            continue
+
+        for pair in data["data"]["marketPairs"]:
+            if f"/{currency}" in str(pair):
+                if ex_filter == "true":
+                    for exchange in cfgj["exchanges"]:
+                        if exchange in str(pair):
+                            exchanges.append(pair["exchangeName"])
+                            prices.append(float(pair["price"]))
+                            urls.append(pair["marketUrl"])
+                else:
+                    exchanges.append(pair["exchangeName"])
+                    prices.append(float(pair["price"]))
+                    urls.append(pair["marketUrl"])
+
+        if not prices:
+            continue
+
+        max_price = max(prices)
+        max_price_index = prices.index(max_price)
+        max_price_exchange = exchanges[max_price_index]
+        max_price_url = urls[max_price_index]
+
+        min_price = min(prices)
+        min_price_index = prices.index(min_price)
+        min_price_exchange = exchanges[min_price_index]
+        min_price_url = urls[min_price_index]
+
+        profit_percentage = 100 - ((min_price / max_price) * 100)
+        profit_amount = investment + (investment * (profit_percentage / 100))
+
+        print("\n" + "=" * 50)
+        print(f"Инвестиция --> {investment} USD")
+        print(f"КУПИТЬ --> {min_price} USD | {min_price_exchange} - {min_price_url}")
+        print(f"ПРОДАТЬ --> {max_price} USD | {max_price_exchange} - {max_price_url}")
+        print(f"Прибыль --> {profit_amount:.2f} USD (+{profit_percentage:.2f} %)")
+        print("=" * 50 + "\n")
+
+    except Exception:
+        pass
